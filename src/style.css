@@ -1,0 +1,129 @@
+/* ── Reset ───────────────────────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ── Base ────────────────────────────────────────────────────── */
+body {
+  background: #0c0c28;
+  min-height: 100vh;
+  font-family: 'Press Start 2P', monospace;
+  color: #ffffff;
+  overflow-x: hidden;
+}
+
+/* ── Background stars ────────────────────────────────────────── */
+.bg-star {
+  position: fixed;
+  background: white;
+  pointer-events: none;
+  z-index: 0;
+  animation:
+    starRise var(--fall-dur) linear infinite var(--fall-del),
+    bgTw     var(--tw-dur)   ease-in-out infinite var(--tw-del);
+}
+@keyframes starRise {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-100vh); }
+}
+@keyframes bgTw {
+  0%, 100% { opacity: var(--op); }
+  50%      { opacity: 0.02; }
+}
+
+/* ── Shared pixel utilities ──────────────────────────────────── */
+.pixel-card {
+  background: #13133a;
+  border: 4px solid #5566cc;
+  box-shadow: 6px 6px 0 #000, 0 0 18px rgba(85,102,204,0.25);
+}
+
+.pixel-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(10px, 1.8vw, 13px);
+  cursor: pointer;
+  padding: 12px 22px;
+  border: 4px solid #6677dd;
+  background: #1e1e50;
+  color: #ccd;
+  box-shadow: 4px 4px 0 #000;
+  letter-spacing: 1px;
+  transition: none;
+  outline: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.pixel-btn:hover  { border-color: #fff; color: #fff; transform: translate(-1px,-1px); box-shadow: 5px 5px 0 #000; background: #2a2a66; }
+.pixel-btn:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 #000; }
+.pixel-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; box-shadow: 4px 4px 0 #000 !important; }
+.btn-icon { position: relative; top: -2px; }
+
+.pixel-btn.green {
+  border-color: #44dd44; color: #66ff66;
+  background: #0d2a0d; box-shadow: 4px 4px 0 #002200;
+}
+.pixel-btn.green:hover  { border-color: #88ff88; color: #ccffcc; background: #1a3a1a; }
+.pixel-btn.green:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 #001100; }
+
+.pixel-btn.cyan {
+  border-color: #2aaa99; color: #4deeea;
+  background: #062028; box-shadow: 4px 4px 0 #001111;
+}
+.pixel-btn.cyan:hover { border-color: #4deeea; color: #aaffff; background: #0a2e38; }
+
+.pixel-input {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(10px, 1.5vw, 12px);
+  background: #0c0c2e;
+  border: 3px solid #4455aa;
+  color: #fff;
+  padding: 10px 12px;
+  width: 100%;
+  outline: none;
+  caret-color: #FFD700;
+}
+.pixel-input:focus { border-color: #FFD700; box-shadow: 0 0 8px rgba(255,215,0,0.3); }
+
+/* ── Toast ───────────────────────────────────────────────────── */
+.toast {
+  position: fixed; top: 16px; left: 50%;
+  transform: translateX(-50%);
+  background: #0E0E38; border: 4px solid #FFD700;
+  padding: 10px 22px; font-size: 12px; color: #FFD700;
+  z-index: 200; white-space: nowrap;
+  animation: toastIn .4s ease-out;
+  box-shadow: 0 0 22px rgba(255,215,0,.3), 4px 4px 0 #000;
+}
+@keyframes toastIn { from { top: -60px; opacity: 0; } to { top: 16px; opacity: 1; } }
+
+/* ── Particles ───────────────────────────────────────────────── */
+.particle {
+  position: fixed; pointer-events: none; z-index: 150;
+  animation: pFall linear forwards;
+  animation-duration: var(--dur);
+  animation-delay: var(--del);
+}
+@keyframes pFall {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+}
+
+/* ── Progress bar animations ─────────────────────────────────── */
+@keyframes shim {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(250%); }
+}
+@keyframes breathe {
+  0%, 100% { box-shadow: 0 0 4px 1px currentColor; opacity: 1; }
+  50%      { box-shadow: 0 0 18px 6px currentColor; opacity: 0.82; }
+}
+@keyframes lockIn {
+  0%   { transform: scale(1);    filter: brightness(1); }
+  25%  { transform: scale(1.15); filter: brightness(2.5); }
+  60%  { transform: scale(1.05); filter: brightness(1.6); }
+  100% { transform: scale(1);    filter: brightness(1); }
+}
+
+/* ── Responsive tweaks ──────────────────────────────────────── */
+@media (max-width: 400px) {
+  .pixel-btn { padding: 10px 14px; }
+}
