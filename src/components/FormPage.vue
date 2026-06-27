@@ -28,7 +28,7 @@
           v-for="id in identities" :key="id.value"
           class="id-item"
           :class="{ selected: form.identity === id.value }"
-          @click="form.identity = id.value"
+          @click="form.identity = id.value; form.dept = ''"
         >
           <span class="id-cursor" :class="{ hidden: form.identity !== id.value }">▶</span>
           <span>{{ id.label }}</span>
@@ -70,6 +70,23 @@
             :class="{ selected: form.dept === d }"
             @click="form.dept = d"
           >{{ d }}</button>
+        </div>
+      </div>
+
+      <!-- 性別 -->
+      <div class="f-field">
+        <label class="f-label">◆ 性別</label>
+        <div class="sub-row">
+          <button
+            v-for="g in GENDERS" :key="g.value"
+            class="gender-btn"
+            :class="{ selected: form.gender === g.value }"
+            :style="form.gender === g.value ? { borderColor: g.color, color: g.color, boxShadow: `3px 3px 0 ${g.color}44` } : {}"
+            @click="form.gender = g.value"
+          >
+            <span class="gender-star" :style="{ color: g.color }">★</span>
+            {{ g.label }}
+          </button>
         </div>
       </div>
 
@@ -137,9 +154,15 @@ const identities  = IDENTITIES
 const depts       = DEPTS
 const weeks       = WEEKS
 
+const GENDERS = [
+  { value: 'male',   label: '男生', color: '#4deeea' },
+  { value: 'female', label: '女生', color: '#FF8080' },
+]
+
 const form = ref({
   identity: '',
   dept:     '',
+  gender:   '',
   name:     '',
   week:     currentWeek,
   minutes:  '',
@@ -147,7 +170,7 @@ const form = ref({
 
 const canSubmit = computed(() => {
   const f = form.value
-  const base = f.name.trim() && f.week && Number(f.minutes) > 0
+  const base = f.name.trim() && f.week && Number(f.minutes) > 0 && f.gender
   return f.identity === 'general' ? base : base && f.dept
 })
 
@@ -156,6 +179,7 @@ function handleSubmit() {
   emit('submit', {
     identity: form.value.identity,
     dept:     form.value.identity === 'general' ? null : form.value.dept,
+    gender:   form.value.gender,
     name:     form.value.name.trim(),
     week:     form.value.week,
     minutes:  Number(form.value.minutes),
@@ -251,6 +275,16 @@ function handleSubmit() {
 .sub-btn   { font-family:'Press Start 2P',monospace; font-size:clamp(9px,1.5vw,11px); padding:8px 14px; border:3px solid #4455aa; background:#13133a; color:#8899cc; cursor:pointer; letter-spacing:1px; outline:none; }
 .sub-btn:hover { border-color:#7788dd; color:#ccd; background:#1e1e50; }
 .sub-btn.selected { border-color:#FFD700; color:#FFD700; background:#1e1800; box-shadow:3px 3px 0 #553300; }
+
+.gender-btn {
+  font-family:'Press Start 2P',monospace; font-size:clamp(9px,1.5vw,11px);
+  padding:10px 20px; border:3px solid #4455aa; background:#13133a;
+  color:#8899cc; cursor:pointer; letter-spacing:1px; outline:none;
+  display:inline-flex; align-items:center; gap:8px;
+}
+.gender-btn:hover { border-color:#7788dd; color:#ccd; background:#1e1e50; }
+.gender-btn.selected { background:#0d0d28; }
+.gender-star { font-size:16px; position:relative; top:-1px; }
 
 .week-sel {
   font-family:'Press Start 2P',monospace; font-size:clamp(9px,1.4vw,11px);

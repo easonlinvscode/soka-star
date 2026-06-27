@@ -43,6 +43,18 @@
           <div class="stat-value remain" :class="{ locked }">{{ fmt(displayRemaining) }}</div>
         </div>
       </div>
+      <div class="daimoku-row">
+        <div class="daimoku-item">
+          <span class="daimoku-label">總目標題目數</span>
+          <span class="daimoku-value goal-d">{{ fmt(GOALS_DAIMOKU[activeDept]) }}</span>
+          <span class="daimoku-unit">遍</span>
+        </div>
+        <div class="daimoku-item">
+          <span class="daimoku-label">目前總題目數</span>
+          <span class="daimoku-value" :class="{ locked }">{{ fmt(displayCount * 60) }}</span>
+          <span class="daimoku-unit">遍</span>
+        </div>
+      </div>
     </div>
 
     <!-- Back -->
@@ -55,7 +67,7 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { ALL_STARS, renderFrame } from '../utils/canvas.js'
 import { useCountAnimation } from '../composables/useCountAnimation.js'
-import { DEPT_TABS, GOALS } from '../data/mockData.js'
+import { DEPT_TABS, GOALS_DAIMOKU } from '../data/mockData.js'
 
 const props = defineProps({
   activeDept:   { type: String, required: true },
@@ -128,6 +140,7 @@ onUnmounted(stopLoop)
 
 /* Dept switcher */
 .dept-bar {
+  margin-top: 20px;
   display: flex; gap: 16px;
   width: 100%; max-width: 480px;
 }
@@ -233,9 +246,27 @@ canvas {
 }
 .stat-value.locked,.stat-pct.locked { animation:lockIn .55s ease-out forwards; }
 
+/* Daimoku row */
+.daimoku-row {
+  display: flex; justify-content: space-between; gap: 12px;
+  margin-top: 14px; padding-top: 12px;
+  border-top: 2px solid #3344aa;
+}
+.daimoku-item { display: flex; flex-direction: column; gap: 4px; }
+.daimoku-item:last-child { text-align: right; }
+.daimoku-label { font-size: 12px; color: #7788cc; letter-spacing: 1px; }
+.daimoku-value {
+  font-size: clamp(13px, 2vw, 18px); color: #ffde4d;
+  text-shadow: 0 0 12px rgba(255,222,77,0.6);
+}
+.daimoku-value.goal-d { color: #4deeea; text-shadow: 0 0 8px rgba(77,238,234,0.5); }
+.daimoku-value.locked { animation: lockIn .55s ease-out forwards; }
+.daimoku-unit { font-size: 11px; color: #aa9933; }
+
 /* Back button */
 .back-btn {
   font-family:'Press Start 2P',monospace;
+  margin-top: 10px;
   font-size:clamp(9px,1.4vw,11px); padding:10px 20px;
   border:3px solid #4455aa; background:#0e0e2e;
   color:#7788cc; cursor:pointer; letter-spacing:1px; box-shadow:3px 3px 0 #000; outline:none;

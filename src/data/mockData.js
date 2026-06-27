@@ -1,7 +1,17 @@
+const GENERAL_DAIMOKU = 20000  // 總務部目標遍數
+
+// 原始目標遍數（直接顯示用，國中/高中含總務部）
+export const GOALS_DAIMOKU = {
+  junior:  1000000 + GENERAL_DAIMOKU,  // 待確認 + 總務 = 1,020,000
+  senior:  1600000 + GENERAL_DAIMOKU,  // 1,600,000 + 20,000 = 1,620,000
+  general: GENERAL_DAIMOKU,            // 20,000
+}
+
+// 換算為分鐘（計算進度用）
 export const GOALS = {
-  junior:  10000,
-  senior:  10000,
-  general: 3000,
+  junior:  Math.round(GOALS_DAIMOKU.junior  / 60),
+  senior:  Math.round(GOALS_DAIMOKU.senior  / 60),
+  general: Math.round(GOALS_DAIMOKU.general / 60),
 }
 
 export const WEEKS = [
@@ -51,7 +61,7 @@ export const MOCK_SUBMISSIONS = [
   { identity: 'general', dept: null,    name: '張幹事', week: 2, minutes: 150 },
 ]
 
-/** 計算某部門的總分鐘數（國中/高中自動加入總務部） */
+/** 計算某部門的總分鐘數，國中/高中自動加入總務部 */
 export function computeTotal(dept, submissions) {
   const generalSum = submissions
     .filter(s => s.identity === 'general')
