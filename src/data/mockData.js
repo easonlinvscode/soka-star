@@ -1,17 +1,20 @@
-const GENERAL_DAIMOKU = 20000  // 總務部目標遍數
+const GENERAL_MINUTES = 24000  // 總務部目標分鐘數
+
+// 國中部各部別目標分鐘數
+const JUNIOR_MINUTES = 5920 + 14580 + 12685  // 執行部 + 熱力部 + 活動部 = 33,185 min
 
 // 原始目標遍數（直接顯示用，國中/高中含總務部）
 export const GOALS_DAIMOKU = {
-  junior:  1000000 + GENERAL_DAIMOKU,  // 待確認 + 總務 = 1,020,000
-  senior:  1600000 + GENERAL_DAIMOKU,  // 1,600,000 + 20,000 = 1,620,000
-  general: GENERAL_DAIMOKU,            // 20,000
+  junior:  JUNIOR_MINUTES  * 60 + GENERAL_MINUTES * 60,  // 1,991,100 + 1,440,000 = 3,431,100
+  senior:  1600000              + GENERAL_MINUTES * 60,  // 1,600,000 + 1,440,000 = 3,040,000
+  general: GENERAL_MINUTES * 60,                         // 1,440,000
 }
 
 // 換算為分鐘（計算進度用）
 export const GOALS = {
-  junior:  Math.round(GOALS_DAIMOKU.junior  / 60),
-  senior:  Math.round(GOALS_DAIMOKU.senior  / 60),
-  general: Math.round(GOALS_DAIMOKU.general / 60),
+  junior:  JUNIOR_MINUTES  + GENERAL_MINUTES,  // 33,185 + 24,000 = 57,185
+  senior:  Math.round(1600000 / 60) + GENERAL_MINUTES,  // 26,667 + 24,000 = 50,667
+  general: GENERAL_MINUTES,  // 24,000
 }
 
 export const WEEKS = [
