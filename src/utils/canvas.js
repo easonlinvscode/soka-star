@@ -72,14 +72,15 @@ function addInterior(ctx) {
   ctx.closePath()
 }
 function addCork(ctx) {
-  ctx.moveTo(50, 6); ctx.lineTo(110, 6)
-  ctx.bezierCurveTo(114, 6, 114, 10, 114, 14)
-  ctx.lineTo(114, 24)
-  ctx.bezierCurveTo(114, 28, 110, 28, 106, 28)
-  ctx.lineTo(54, 28)
-  ctx.bezierCurveTo(46, 28, 46, 24, 46, 20)
-  ctx.lineTo(46, 14)
-  ctx.bezierCurveTo(46, 10, 46, 6, 50, 6)
+  // 圓角頂部寬體軟木塞，坐在瓶頸上
+  const L = 50, R = 110, T = 4, B = 26, rad = 8
+  ctx.moveTo(L + rad, T)
+  ctx.lineTo(R - rad, T)
+  ctx.quadraticCurveTo(R, T, R, T + rad)
+  ctx.lineTo(R, B)
+  ctx.lineTo(L, B)
+  ctx.lineTo(L, T + rad)
+  ctx.quadraticCurveTo(L, T, L + rad, T)
   ctx.closePath()
 }
 
@@ -163,18 +164,46 @@ function drawFront(ctx) {
   pNeckOuter(ctx);   ctx.strokeStyle = '#0A1830'; ctx.lineWidth = 2.4; ctx.stroke()
 
   // Cork
-  pCork(ctx); ctx.fillStyle = '#9A7020'; ctx.fill()
-  ctx.strokeStyle = 'rgba(80,50,10,0.55)'; ctx.lineWidth = 1.7
-  for (let y = 12; y <= 24; y += 6) {
-    ctx.beginPath(); ctx.moveTo(50, y); ctx.lineTo(110, y); ctx.stroke()
+  // ── Cork base ────────────────────────────────────────────────
+  pCork(ctx); ctx.fillStyle = '#7B4A18'; ctx.fill()
+
+  // ── Cork spots texture ────────────────────────────────────────
+  const corkRng = lcg(99887)
+  ctx.save()
+  pCork(ctx); ctx.clip()
+  for (let i = 0; i < 32; i++) {
+    const sx = 52 + corkRng() * 56
+    const sy = 6  + corkRng() * 17
+    const sr = 1.4 + corkRng() * 2.6
+    ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2)
+    ctx.fillStyle = `rgba(30,12,2,${0.35 + corkRng() * 0.45})`; ctx.fill()
   }
-  const cg = ctx.createLinearGradient(0, 6, 0, 28)
-  cg.addColorStop(0,   'rgba(225,185,80,0.65)')
-  cg.addColorStop(0.5, 'rgba(150,110,30,0.10)')
-  cg.addColorStop(1,   'rgba(60,40,5,0.30)')
-  pCork(ctx); ctx.fillStyle = cg; ctx.fill()
-  pCork(ctx); ctx.strokeStyle = '#4A2C08'; ctx.lineWidth = 2.0; ctx.stroke()
-  ctx.fillStyle = 'rgba(25,15,5,0.50)'; ctx.fillRect(56, 26, 48, 4)
+  ctx.restore()
+
+  // ── Left-to-right side lighting ──────────────────────────────
+  const cgh = ctx.createLinearGradient(50, 0, 110, 0)
+  cgh.addColorStop(0,    'rgba(200,145,65,0.45)')
+  cgh.addColorStop(0.25, 'rgba(220,165,75,0.18)')
+  cgh.addColorStop(0.75, 'rgba(100,60,18,0.10)')
+  cgh.addColorStop(1,    'rgba(60,30,8,0.38)')
+  pCork(ctx); ctx.fillStyle = cgh; ctx.fill()
+
+  // ── Top-to-bottom shading ─────────────────────────────────────
+  const cgv = ctx.createLinearGradient(0, 4, 0, 26)
+  cgv.addColorStop(0,   'rgba(240,195,100,0.50)')
+  cgv.addColorStop(0.35,'rgba(170,115,40,0.08)')
+  cgv.addColorStop(1,   'rgba(35,15,3,0.48)')
+  pCork(ctx); ctx.fillStyle = cgv; ctx.fill()
+
+  // ── Outline ───────────────────────────────────────────────────
+  pCork(ctx); ctx.strokeStyle = '#2E1204'; ctx.lineWidth = 2.5; ctx.stroke()
+
+  // ── Metallic rim highlight (瓶頸頂部銀色邊) ──────────────────
+  ctx.save()
+  ctx.strokeStyle = 'rgba(140,175,230,0.85)'; ctx.lineWidth = 2.5
+  ctx.shadowColor = 'rgba(100,160,255,0.9)'; ctx.shadowBlur = 6
+  ctx.beginPath(); ctx.moveTo(52, 26); ctx.lineTo(108, 26); ctx.stroke()
+  ctx.restore()
 
   // Label tag string
   ctx.strokeStyle = 'rgba(150,115,55,0.75)'; ctx.lineWidth = 1.7

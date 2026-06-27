@@ -49,6 +49,19 @@
     <!-- Toast -->
     <div v-if="toast" class="toast">{{ toast }}</div>
 
+    <!-- 鼓勵彈窗 -->
+    <div v-if="showEncouragement && currentQuote" class="enc-overlay" @click.self="closeEncouragement">
+      <div class="enc-box">
+        <button class="enc-close" @click="closeEncouragement">✕</button>
+        <div class="enc-category">✦ {{ currentQuote.category }} ✦</div>
+        <div class="enc-quote">{{ currentQuote.quote }}</div>
+        <div v-if="currentQuote.source" class="enc-source">{{ currentQuote.source }}</div>
+        <div class="enc-divider"></div>
+        <div class="enc-encourage">{{ currentQuote.encourage }}</div>
+        <button class="enc-btn" @click="closeEncouragement">查看星星瓶 ★</button>
+      </div>
+    </div>
+
     <!-- Particles -->
     <div
       v-for="p in particles" :key="'p' + p.id"
@@ -64,6 +77,7 @@
         :active-dept="activeDept"
         :goal-count="goalCount"
         :current-count="currentCount"
+        :submissions="submissions"
         @back="page = 'form'"
         @switch-dept="switchDept"
       />
@@ -78,6 +92,7 @@ import BottlePage from './components/BottlePage.vue'
 import { useBgStars }       from './composables/useBgStars.js'
 import { GOALS, computeTotal } from './data/mockData.js'
 import { fetchSubmissions, postSubmission } from './utils/api.js'
+import { getRandomQuote } from './data/quotes.js'
 
 /* ── Background stars ──────────────────────────────────────────── */
 const { bgStars } = useBgStars(280)
@@ -124,6 +139,24 @@ function switchDept(dept) {
   currentCount.value = computeTotal(dept, submissions.value)
 }
 
+/* ── 鼓勵彈窗 ───────────────────────────────────────────────────── */
+const showEncouragement = ref(false)
+const currentQuote      = ref(null)
+let   pendingEntry      = null   // 等關閉彈窗後再更新星星瓶
+
+function closeEncouragement() {
+  showEncouragement.value = false
+  if (!pendingEntry) return
+  const entry = pendingEntry
+  pendingEntry = null
+  submissions.value.push(entry)
+  const dept = entry.identity
+  activeDept.value   = dept
+  goalCount.value    = GOALS[dept]
+  currentCount.value = computeTotal(dept, submissions.value)
+  page.value         = 'bottle'
+}
+
 async function handleFormSubmit(entry) {
   submitting.value = true
   try {
@@ -133,12 +166,10 @@ async function handleFormSubmit(entry) {
   } finally {
     submitting.value = false
   }
-  submissions.value.push(entry)
-  const dept = entry.identity
-  activeDept.value   = dept
-  goalCount.value    = GOALS[dept]
-  currentCount.value = computeTotal(dept, submissions.value)
-  page.value         = 'bottle'
+  // loading 結束後先顯示鼓勵語錄
+  pendingEntry            = entry
+  currentQuote.value      = getRandomQuote()
+  showEncouragement.value = true
 }
 
 function handleViewBottle(dept) {
@@ -264,5 +295,71 @@ watch(currentCount, (n) => {
   background: #2a0808; border: 3px solid #ff4444; color: #ff8888;
   padding: 10px 20px; z-index: 200;
   box-shadow: 4px 4px 0 #000;
+}
+
+/* ── 鼓勵彈窗 ── */
+.enc-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(4, 4, 18, 0.88);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.enc-box {
+  position: relative;
+  width: 100%; max-width: 480px;
+  background: #0d0d2a;
+  border: 3px solid #FFD700;
+  box-shadow: 0 0 30px rgba(255,215,0,0.25), 6px 6px 0 #553300;
+  padding: 28px 24px 24px;
+  display: flex; flex-direction: column; gap: 14px;
+  animation: encFadeIn .4s ease-out;
+}
+@keyframes encFadeIn {
+  from { opacity: 0; transform: scale(0.92) translateY(10px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+.enc-close {
+  position: absolute; top: 10px; right: 12px;
+  font-family: 'Press Start 2P', monospace; font-size: 12px;
+  padding: 4px 8px; border: 2px solid #4455aa;
+  background: #0e0e2e; color: #8899cc; cursor: pointer; outline: none;
+}
+.enc-close:hover { border-color: #FF8080; color: #FF8080; }
+.enc-category {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px; color: #4deeea; letter-spacing: 1px;
+  text-shadow: 0 0 8px rgba(77,238,234,0.5);
+  text-align: center;
+}
+.enc-quote {
+  font-family: "PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  font-size: 15px; color: #FFD700; line-height: 1.8;
+  text-shadow: 0 0 10px rgba(255,215,0,0.3);
+  text-align: center;
+}
+.enc-source {
+  font-family: "PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  font-size: 12px; color: #8899cc; text-align: center;
+}
+.enc-divider {
+  height: 2px; background: linear-gradient(90deg, transparent, #4455aa, transparent);
+}
+.enc-encourage {
+  font-family: "PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  font-size: 14px; color: #ccd8ff; line-height: 1.9;
+  text-align: center;
+}
+.enc-btn {
+  font-family: 'Press Start 2P', monospace; font-size: 12px;
+  padding: 12px 20px; margin-top: 6px;
+  border: 3px solid #FFD700; background: #1e1800; color: #FFD700;
+  cursor: pointer; outline: none; letter-spacing: 1px;
+  box-shadow: 3px 3px 0 #553300;
+  align-self: center;
+}
+.enc-btn:hover {
+  background: #2e2600;
+  box-shadow: 4px 4px 0 #553300, 0 0 14px rgba(255,215,0,0.4);
+  transform: translate(-1px,-1px);
 }
 </style>

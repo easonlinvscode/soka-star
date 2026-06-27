@@ -13,25 +13,34 @@
         v-for="d in deptTabs" :key="d.value"
         class="dept-tab"
         :class="{ active: activeDept === d.value }"
-        @click="$emit('switch-dept', d.value)"
+        @click="$emit('switch-dept', d.value); selectedSubDept = null"
       >{{ d.label }}</button>
     </div>
 
-    <!-- Canvas bottle -->
-    <div class="bottle-wrap">
-      <canvas ref="cvs" width="160" height="240"></canvas>
-      <div class="tag-label">{{ deptLabel }}</div>
+    <!-- Bottle -->
+    <div class="bottle-zone">
+      <div class="bottle-wrap">
+        <canvas ref="cvs" width="160" height="240"></canvas>
+        <div class="tag-label">{{ subDeptTagLabel }}</div>
+      </div>
     </div>
 
     <!-- Stats -->
     <div class="stats-box">
+      <!-- 部別選單：獨立一行，靠右，在 pbar 上方 -->
+      <div v-if="activeDept !== 'general'" class="sf-row">
+        <select class="sf-sel" v-model="selectedSubDept" @change="onSubDeptChange">
+          <option :value="null">全部</option>
+          <option v-for="d in subDeptOptions" :key="d" :value="d">{{ d }}</option>
+        </select>
+      </div>
       <div class="pbar-wrap">
         <div class="pbar-fill" :style="{ width: pct + '%', background: barColor }"></div>
       </div>
       <div class="stat-row">
         <div class="stat-item">
           <div class="stat-label">目標分鐘</div>
-          <div class="stat-value goal">{{ fmt(goalCount) }}</div>
+          <div class="stat-value goal">{{ fmt(activeGoal) }}</div>
         </div>
         <div class="stat-item stat-c">
           <div class="stat-label">目前分鐘</div>
@@ -46,7 +55,7 @@
       <div class="daimoku-row">
         <div class="daimoku-item">
           <span class="daimoku-label">總目標題目數</span>
-          <span class="daimoku-value goal-d">{{ fmt(GOALS_DAIMOKU[activeDept]) }}</span>
+          <span class="daimoku-value goal-d">{{ fmt(activeGoal * 60) }}</span>
           <span class="daimoku-unit">遍</span>
         </div>
         <div class="daimoku-item">
@@ -67,34 +76,69 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { ALL_STARS, renderFrame } from '../utils/canvas.js'
 import { useCountAnimation } from '../composables/useCountAnimation.js'
-import { DEPT_TABS, GOALS_DAIMOKU } from '../data/mockData.js'
+import { DEPT_TABS, GOALS_DAIMOKU, DEPT_GOALS, GENERAL_MINUTES } from '../data/mockData.js'
 
 const props = defineProps({
   activeDept:   { type: String, required: true },
   goalCount:    { type: Number, required: true },
   currentCount: { type: Number, required: true },
+  submissions:  { type: Array, default: () => [] },
 })
-defineEmits(['back', 'switch-dept'])
+const emit = defineEmits(['back', 'switch-dept'])
 
 const deptTabs = DEPT_TABS
 const deptLabel = computed(() => ({ junior: '國中', senior: '高中', general: '總務' }[props.activeDept]))
 
+/* ── 部別下拉選單 ─────────────────────────────────────────────── */
+const selectedSubDept = ref(null)
+const subDeptOptions  = ['執行部', '熱力部', '活動部', '總務部']
+
+// 瓶身標籤：有選子部別時顯示子部別名
+const subDeptTagLabel = computed(() => {
+  if (!selectedSubDept.value) return deptLabel.value
+  if (selectedSubDept.value === '總務部') return '總務'
+  return selectedSubDept.value
+})
+
+function onSubDeptChange() {
+  if (selectedSubDept.value === '總務部') {
+    // 切換到總務部 tab，清掉子選單
+    emit('switch-dept', 'general')
+    selectedSubDept.value = null
+  }
+}
+
+// 目前選中的目標分鐘
+const activeGoal = computed(() => {
+  if (!selectedSubDept.value) return props.goalCount
+  return DEPT_GOALS[props.activeDept]?.[selectedSubDept.value] ?? props.goalCount
+})
+
+// 目前選中的實際分鐘
+const activeCount = computed(() => {
+  if (!selectedSubDept.value) return props.currentCount
+  const identity = props.activeDept
+  const dept     = selectedSubDept.value
+  return props.submissions
+    .filter(s => s.identity === identity && s.dept === dept)
+    .reduce((a, s) => a + s.minutes, 0)
+})
+
 const fmt = n => Number(n || 0).toLocaleString()
 
 /* ── Count animation ─────────────────────────────────────────── */
-const currentCountRef = computed(() => props.currentCount)
-const goalCountRef    = computed(() => props.goalCount)
+const currentCountRef = computed(() => activeCount.value)
+const goalCountRef    = computed(() => activeGoal.value)
 const { displayCount, displayRemaining, displayPct, locked, reset } =
   useCountAnimation(currentCountRef, goalCountRef)
 
-// currentCount 或 activeDept 變動時重播動畫（nextTick 確保 props 全數到位）
-watch([() => props.activeDept, () => props.currentCount], async () => {
+watch([() => props.activeDept, () => props.currentCount, selectedSubDept], async () => {
   await nextTick()
   reset()
 })
 
 /* ── Progress ────────────────────────────────────────────────── */
-const progress = computed(() => Math.min(Math.max(props.currentCount / props.goalCount, 0), 1))
+const progress = computed(() => Math.min(Math.max(activeCount.value / activeGoal.value, 0), 1))
 const pct      = computed(() => Math.round(progress.value * 100))
 const shown    = computed(() => Math.round(progress.value * ALL_STARS.length))
 const barColor = computed(() => {
@@ -169,14 +213,46 @@ onUnmounted(stopLoop)
   box-shadow: 5px 5px 0 #d9dcf7;
 }
 
+/* Bottle zone */
+.bottle-zone {
+  position: relative;
+  width: 100%; max-width: 480px;
+  display: flex; justify-content: center;
+}
+
+/* 部別選單獨立靠右 */
+.sf-row {
+  display: flex; justify-content: flex-end;
+  margin-bottom: 6px;
+}
+
+/* Sub-dept select */
+.sf-sel {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  background: #050514; border: 2px solid #334488; color: #ccd;
+  padding: 0 22px 0 7px;
+  height: 34px;
+  vertical-align: middle;
+  outline: none; cursor: pointer;
+  -webkit-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='6'%3E%3Cpath d='M0 0l4 6 4-6z' fill='%23FFD700'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 6px center;
+  text-align: center;
+  white-space: nowrap; flex-shrink: 0;
+  line-height: 22px;
+}
+.sf-sel:focus { border-color: #FFD700; }
+.sf-sel option { background: #10102e; }
+
 /* Title */
 .b-title { font-size:clamp(24px,5vw,36px); color:#FFD700; text-shadow:3px 3px 0 #aa7700, 6px 6px 0 #553300; text-align:center; letter-spacing:3px; line-height:1.8; }
 .b-sub   { font-size:clamp(10px,2vw,15px); color:#aaccff; text-align:center; letter-spacing:2px; opacity:.85; margin-top:4px; }
 
 /* Canvas */
+.bottle-zone { --bh: min(48vh, calc(50vw * 1.5), 420px); }
 .bottle-wrap {
   position: relative;
-  --bh: min(48vh, calc(50vw * 1.5), 420px);
   width: calc(var(--bh) * 80 / 120);
 }
 canvas {
@@ -274,6 +350,6 @@ canvas {
 .back-btn:hover { border-color:#4deeea; color:#4deeea; transform:translate(-1px,-1px); box-shadow:4px 4px 0 #000, 0 0 10px rgba(77,238,234,0.3); }
 
 @media (min-width:768px) {
-  .bottle-wrap { --bh: min(52vh, 420px); }
+  .bottle-zone { --bh: min(52vh, 420px); }
 }
 </style>

@@ -12,16 +12,60 @@
       <span v-for="n in 7" :key="n" class="star-blink" :class="'star-blink-' + n">★</span>
     </div>
 
-    <!-- Step indicator -->
-    <div class="step-row">
-      <div class="step-node" :class="{ active: step === 1, done: step > 1 }">1</div>
-      <div class="step-dash" :class="{ done: step > 1 }"></div>
-      <div class="step-node" :class="{ active: step === 2 }">2</div>
+    <!-- 說明文字（step 1 限定） -->
+    <div v-if="step === 1" class="intro-box">
+      <p class="intro-title">✦ 大家好！歡迎來到福運搜集站 ✦</p>
+      <p>暑期活動即將展開，讓我們一起集結所有人的力量，創造最閃亮的夏天！</p>
+      <p>在這裡，每一遍南無妙法蓮華經，都會化作一顆閃耀的星星，緩緩填滿你的星星瓶。大家的堅持與努力，將在這個夏天凝聚成無盡的福運。</p>
+      <p class="intro-cta">就讓我們攜手搜集題目，讓這個暑期活動大勝利吧！🌟</p>
     </div>
+
+    <!-- 使用說明彈出視窗 -->
+    <teleport to="body">
+      <div v-if="showManual" class="manual-overlay" @click.self="showManual = false">
+        <div class="manual-box pixel-card">
+          <button class="manual-close" @click="showManual = false">✕</button>
+          <div class="manual-header">📖 使用說明</div>
+          <div class="manual-body">
+            <div class="manual-section">
+              <div class="manual-step">① 選擇你的組別</div>
+              <p>進入頁面後，請先選擇自己所屬的組別：</p>
+              <ul>
+                <li><b>國中部</b> — 國中部的夥伴</li>
+                <li><b>高中部</b> — 高中部的夥伴</li>
+                <li><b>總務部</b> — 幕後默默支持的夥伴</li>
+              </ul>
+            </div>
+            <div class="manual-section">
+              <div class="manual-step">② 填寫本週題目數</div>
+              <p>選好組別後，依序填寫：部別、性別、姓名、週次，以及本週的唱題<b>分鐘數</b>。填寫完畢後按下「SUBMIT」送出即可。</p>
+              <div class="manual-tip">💡 換算提醒：1 分鐘 = 60 遍題目，系統會自動幫你換算成遍數喔！</div>
+            </div>
+            <div class="manual-section">
+              <div class="manual-step">③ 查看星星瓶</div>
+              <p>送出後會自動跳轉到星星瓶頁面，你可以看到：</p>
+              <ul>
+                <li>目前全組的累積分鐘數與遍數</li>
+                <li>距離目標還差多少</li>
+                <li>瓶中的星星隨著大家的努力越來越多！</li>
+              </ul>
+            </div>
+            <div class="manual-section">
+              <div class="manual-step">④ 切換組別 | 部別</div>
+              <p>畫面上方的按鈕可以切換國中、高中、總務三個瓶子，也可以透過下拉選單查看各部別的個別進度。</p>
+            </div>
+            <div class="manual-footer">🌟 一起讓星星瓶裝滿吧！ 🌟</div>
+          </div>
+        </div>
+      </div>
+    </teleport>
 
     <!-- ── Step 1: 選擇身分 ── -->
     <div v-if="step === 1" class="f-card pixel-card">
-      <div class="f-card-title">▌ SELECT YOUR TEAM</div>
+      <div class="f-card-title-row">
+        <div class="f-card-title">▌ SELECT YOUR TEAM</div>
+        <button class="manual-btn" @click="showManual = true">使用說明書</button>
+      </div>
 
       <div class="id-menu">
         <div
@@ -149,6 +193,7 @@ import { IDENTITIES, DEPTS, WEEKS, getCurrentWeek } from '../data/mockData.js'
 const emit = defineEmits(['submit', 'view'])
 
 const step        = ref(1)
+const showManual  = ref(false)
 const currentWeek = getCurrentWeek()
 const identities  = IDENTITIES
 const depts       = DEPTS
@@ -203,7 +248,7 @@ function handleSubmit() {
   padding: 12px 0 4px; margin-top: -60px;
 }
 .f-title  { font-size: clamp(24px, 5vw, 36px); color: #FFD700; text-shadow: 3px 3px 0 #aa7700, 6px 6px 0 #553300; letter-spacing: 3px; line-height: 1.8; }
-.f-sub    { font-size: clamp(10px,2vw,15px); color: #aaccff; letter-spacing: 2px; margin-top: 8px; }
+.f-sub    { font-size: clamp(12px,2vw,15px); color: #aaccff; letter-spacing: 2px; margin-top: 8px; }
 
 /* Star row */
 .pac-row { display: flex; gap: 18px; align-items: center; justify-content: center; }
@@ -237,24 +282,101 @@ function handleSubmit() {
 
 /* Card */
 .f-card       { width:100%; max-width:600px; padding:22px 18px 20px; }
-.f-card-title { font-size:clamp(10px,1.8vw,13px); color:#4deeea; letter-spacing:2px; border-bottom:2px solid #3344aa; padding-bottom:12px; margin-bottom:20px; text-shadow:0 0 8px rgba(77,238,234,0.5); }
+.f-card-title-row {
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 2px solid #3344aa; padding-bottom: 12px; margin-bottom: 20px;
+}
+.f-card-title { font-size:clamp(12px,1.8vw,13px); color:#4deeea; letter-spacing:2px; text-shadow:0 0 8px rgba(77,238,234,0.5); }
+
+/* Step 2 standalone title */
+.f-card > .f-card-title {
+  border-bottom: 2px solid #3344aa;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+}
+
+/* 使用說明書按鈕 */
+.manual-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px; padding: 5px 8px;
+  border: 2px solid #6677bb; background: #0e0e2e; color: #8899cc;
+  cursor: pointer; letter-spacing: 1px; outline: none;
+  white-space: nowrap; flex-shrink: 0;
+}
+.manual-btn:hover { border-color: #FFD700; color: #FFD700; }
+
+/* 說明彈出視窗 */
+.manual-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(5,5,20,0.85);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+}
+.manual-box {
+  position: relative;
+  width: 100%; max-width: 520px; max-height: 80vh;
+  overflow-y: auto;
+  padding: 20px 22px 24px;
+}
+.manual-close {
+  position: absolute; top: 10px; right: 12px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px; padding: 4px 8px;
+  border: 2px solid #4455aa; background: #0e0e2e; color: #8899cc;
+  cursor: pointer; outline: none;
+}
+.manual-close:hover { border-color: #FF8080; color: #FF8080; }
+.manual-header {
+  font-size: clamp(13px, 2vw, 15px); color: #FFD700;
+  text-shadow: 0 0 10px rgba(255,215,0,0.5);
+  letter-spacing: 2px; margin-bottom: 18px;
+  border-bottom: 2px solid #3344aa; padding-bottom: 12px;
+}
+.manual-body {
+  font-family: "PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  font-size: clamp(12px,1.6vw,13px); color: #aabbdd; line-height: 1.9;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.manual-section { display: flex; flex-direction: column; gap: 6px; }
+.manual-step {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px; color: #4deeea;
+  text-shadow: 0 0 6px rgba(77,238,234,0.4);
+  letter-spacing: 1px;
+}
+.manual-body p { margin: 0; }
+.manual-body ul { margin: 4px 0 0 16px; padding: 0; }
+.manual-body li { margin-bottom: 4px; }
+.manual-body b { color: #ffffff; }
+.manual-tip {
+  background: #0a0a28; border-left: 3px solid #FFD700;
+  padding: 8px 12px; color: #ccbb77;
+  font-size: 12px;
+}
+.manual-footer {
+  text-align: center; color: #4deeea;
+  text-shadow: 0 0 8px rgba(77,238,234,0.4);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px; padding-top: 6px;
+  border-top: 2px solid #3344aa; margin-top: 4px;
+}
 
 /* Identity menu */
 .id-menu { display:flex; flex-direction:column; gap:6px; margin-bottom:22px; }
 .id-item {
   display:flex; align-items:center; gap:12px; padding:12px 14px;
   border:3px solid transparent; cursor:pointer; color:#8899cc;
-  font-size:clamp(10px,1.8vw,13px); letter-spacing:1px; user-select:none;
+  font-size:clamp(12px,1.8vw,13px); letter-spacing:1px; user-select:none;
 }
 .id-item:hover        { color:#ccd; border-color:#5566cc; background:#181840; }
 .id-item.selected     { color:#fff; border-color:#FFD700; background:#1e1800; box-shadow:3px 3px 0 #553300; }
 .id-cursor            { color:#FFD700; width:16px; flex-shrink:0; animation:blink .8s step-end infinite; }
 .id-cursor.hidden     { color:transparent; animation:none; }
-.id-badge             { margin-left:auto; font-size:9px; color:#6677aa; }
+.id-badge             { margin-left:auto; font-size:12px; color:#6677aa; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
 /* Coin */
-.coin-row { display:flex; align-items:center; gap:8px; justify-content:center; font-size:11px; color:#FFD700; margin-bottom:4px; }
+.coin-row { display:flex; align-items:center; gap:8px; justify-content:center; font-size:12px; color:#FFD700; margin-bottom:4px; }
 .coin { width:14px; height:14px; background:#FFD700; border-radius:50%; border:2px solid #aa8800; display:inline-block; animation:coinFlip 1.2s step-end infinite; }
 @keyframes coinFlip { 0%{width:14px} 25%{width:4px} 50%{width:14px} 75%{width:4px} 100%{width:14px} }
 
@@ -265,19 +387,19 @@ function handleSubmit() {
   border: 3px solid #FFD700; background: #1e1800;
   box-shadow: 3px 3px 0 #553300;
 }
-.team-badge-label { font-size: 10px; color: #aa8800; letter-spacing: 1px; }
+.team-badge-label { font-size: 12px; color: #aa8800; letter-spacing: 1px; }
 .team-badge-value { font-size: clamp(12px, 2vw, 15px); color: #FFD700; text-shadow: 0 0 8px rgba(255,215,0,0.5); }
 
 /* Form fields */
 .f-field   { margin-bottom:16px; }
-.f-label   { font-size:clamp(9px,1.5vw,11px); color:#4deeea; display:block; margin-bottom:8px; letter-spacing:1px; text-shadow:0 0 6px rgba(77,238,234,0.4); }
+.f-label   { font-size:12px; color:#4deeea; display:block; margin-bottom:8px; letter-spacing:1px; text-shadow:0 0 6px rgba(77,238,234,0.4); }
 .sub-row   { display:flex; gap:8px; flex-wrap:wrap; }
-.sub-btn   { font-family:'Press Start 2P',monospace; font-size:clamp(9px,1.5vw,11px); padding:8px 14px; border:3px solid #4455aa; background:#13133a; color:#8899cc; cursor:pointer; letter-spacing:1px; outline:none; }
+.sub-btn   { font-family:'Press Start 2P',monospace; font-size:12px; padding:8px 14px; border:3px solid #4455aa; background:#13133a; color:#8899cc; cursor:pointer; letter-spacing:1px; outline:none; }
 .sub-btn:hover { border-color:#7788dd; color:#ccd; background:#1e1e50; }
 .sub-btn.selected { border-color:#FFD700; color:#FFD700; background:#1e1800; box-shadow:3px 3px 0 #553300; }
 
 .gender-btn {
-  font-family:'Press Start 2P',monospace; font-size:clamp(9px,1.5vw,11px);
+  font-family:'Press Start 2P',monospace; font-size:12px;
   padding:10px 20px; border:3px solid #4455aa; background:#13133a;
   color:#8899cc; cursor:pointer; letter-spacing:1px; outline:none;
   display:inline-flex; align-items:center; gap:8px;
@@ -287,7 +409,7 @@ function handleSubmit() {
 .gender-star { font-size:16px; position:relative; top:-1px; }
 
 .week-sel {
-  font-family:'Press Start 2P',monospace; font-size:clamp(9px,1.4vw,11px);
+  font-family:'Press Start 2P',monospace; font-size:12px;
   background:#0c0c2e; border:3px solid #4455aa; color:#fff;
   padding:12px 36px 16px 12px; width:100%; outline:none; cursor:pointer;
   line-height: 1.8;
@@ -299,7 +421,7 @@ function handleSubmit() {
 .week-sel option { background:#13133a; line-height: 1.8; }
 
 .min-row  { display:flex; align-items:center; gap:12px; }
-.min-unit { font-size:clamp(9px,1.4vw,11px); color:#8899cc; white-space:nowrap; flex-shrink:0; }
+.min-unit { font-size:12px; color:#8899cc; white-space:nowrap; flex-shrink:0; }
 
 .f-actions { display:flex; gap:12px; justify-content:center; margin-top:22px; flex-wrap:wrap; }
 
@@ -307,4 +429,29 @@ function handleSubmit() {
   .f-card { padding:16px 12px; }
   .sub-btn { padding:7px 10px; }
 }
+
+/* 說明文字 */
+.intro-box {
+  width: 100%; max-width: 600px;
+  padding-bottom: 4px;
+  display: flex; flex-direction: column; gap: 10px;
+  font-family: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+  font-size: clamp(12px, 1.8vw, 14px);
+  color: #8899cc;
+  line-height: 1.8;
+  text-align: center;
+}
+.intro-title {
+  font-size: clamp(13px, 2vw, 15px);
+  color: #FFD700;
+  text-shadow: 0 0 10px rgba(255,215,0,0.4);
+  letter-spacing: 1px;
+  margin: 0;
+}
+.intro-cta {
+  color: #4deeea;
+  text-shadow: 0 0 8px rgba(77,238,234,0.35);
+  margin: 0;
+}
+.intro-box p { margin: 0; }
 </style>

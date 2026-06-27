@@ -1,7 +1,21 @@
-const GENERAL_MINUTES = 24000  // 總務部目標分鐘數
+export const GENERAL_MINUTES = 24000  // 總務部目標分鐘數
 
 // 國中部各部別目標分鐘數
 const JUNIOR_MINUTES = 5920 + 14580 + 12685  // 執行部 + 熱力部 + 活動部 = 33,185 min
+
+// 各部別子目標（分鐘）
+export const DEPT_GOALS = {
+  junior: {
+    '執行部': 5920,
+    '熱力部': 14580,
+    '活動部': 12685,
+  },
+  senior: {
+    '執行部': Math.round(300000 / 60),   // 5,000
+    '熱力部': Math.round(1000000 / 60),  // 16,667
+    '活動部': Math.round(300000 / 60),   // 5,000
+  },
+}
 
 // 原始目標遍數（直接顯示用，國中/高中含總務部）
 export const GOALS_DAIMOKU = {
